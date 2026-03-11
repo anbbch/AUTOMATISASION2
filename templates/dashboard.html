@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard Agify</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f7f9fc; color: #222; }
+    h1, h2 { color: #1f3c88; }
+    .card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background: #eef3ff; }
+    .pass { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+    .small { font-size: 13px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Dashboard — Tests API Agify</h1>
+
+  {% if last_run %}
+  <div class="card">
+    <h2>Dernier run</h2>
+    <p><b>Date :</b> {{ last_run.timestamp }}</p>
+    <p><b>Passés :</b> {{ last_run.passed }} | <b>Échoués :</b> {{ last_run.failed }}</p>
+    <p><b>Error rate :</b> {{ last_run.error_rate }}</p>
+    <p><b>Latence moyenne :</b> {{ last_run.latency_ms_avg }} ms</p>
+    <p><b>Latence p95 :</b> {{ last_run.latency_ms_p95 }} ms</p>
+    <p><b>Disponibilité :</b> {{ last_run.availability }}%</p>
+
+    <h3>Détail des tests</h3>
+    <table>
+      <tr>
+        <th>Test</th>
+        <th>Statut</th>
+        <th>Latence</th>
+        <th>Détails</th>
+      </tr>
+      {% for test in last_run.payload.tests %}
+      <tr>
+        <td>{{ test.name }}</td>
+        <td class="{{ 'pass' if test.status == 'PASS' else 'fail' }}">{{ test.status }}</td>
+        <td>{{ test.latency_ms if test.latency_ms is not none else '-' }} ms</td>
+        <td>{{ test.details }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <h2>Historique des runs</h2>
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Passés</th>
+        <th>Échoués</th>
+        <th>Error rate</th>
+        <th>Latence avg</th>
+        <th>Latence p95</th>
+        <th>Disponibilité</th>
+      </tr>
+      {% for run in runs %}
+      <tr>
+        <td>{{ run.id }}</td>
+        <td>{{ run.timestamp }}</td>
+        <td>{{ run.passed }}</td>
+        <td>{{ run.failed }}</td>
+        <td>{{ run.error_rate }}</td>
+        <td>{{ run.latency_ms_avg }} ms</td>
+        <td>{{ run.latency_ms_p95 }} ms</td>
+        <td>{{ run.availability }}%</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</body>
+</html>
