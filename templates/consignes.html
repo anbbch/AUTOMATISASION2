@@ -160,6 +160,71 @@
     }
     button:hover{filter:brightness(1.05)}
     .small{font-size:12px}
+    .status-pass{
+      color: var(--ok);
+      font-weight: 700;
+    }
+    .status-fail{
+      color: var(--bad);
+      font-weight: 700;
+    }
+    .status-neutral{
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .monitor-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+      margin-top:18px;
+    }
+    .monitor-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .monitor-actions a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:12px;
+      background: rgba(119,186,255,0.18);
+      border:1px solid rgba(119,186,255,0.34);
+      color:var(--text);
+      font-weight:600;
+      text-decoration:none;
+    }
+    .monitor-actions a:hover{
+      filter:brightness(1.05);
+      text-decoration:none;
+    }
+    .empty-state{
+      padding:14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color:var(--muted);
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .badge-api{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(98,214,160,0.12);
+      border:1px solid rgba(98,214,160,0.28);
+      color:#d8ffe9;
+      font-size:12px;
+    }
   </style>
 </head>
 
@@ -436,6 +501,147 @@ project/
       </pre>
     </aside>
   </div>
+
+
+    <section class="card monitor-grid">
+    <div class="section-title">
+      <div>
+        <h2>6) Monitoring de l’API</h2>
+        <p class="muted small">
+          Cette section affiche le dernier run des tests, les métriques QoS et l’historique des exécutions.
+        </p>
+      </div>
+      <span class="badge-api">API monitorée : Agify</span>
+    </div>
+
+    <div class="monitor-actions">
+      <a href="/run">Lancer un run</a>
+      <a href="/health">Voir /health</a>
+      <a href="/dashboard">Ouvrir le dashboard séparé</a>
+    </div>
+
+    {% if last_run %}
+    <div class="card">
+      <h3>Dernier run</h3>
+      <div class="kpi">
+        <div class="box">
+          <b>Timestamp</b>
+          <span>{{ last_run.timestamp }}</span>
+        </div>
+        <div class="box">
+          <b>Tests passés</b>
+          <span>{{ last_run.passed }}</span>
+        </div>
+        <div class="box">
+          <b>Tests échoués</b>
+          <span>{{ last_run.failed }}</span>
+        </div>
+        <div class="box">
+          <b>Taux d’erreur</b>
+          <span>{{ last_run.error_rate }}</span>
+        </div>
+        <div class="box">
+          <b>Latence moyenne</b>
+          <span>{{ last_run.latency_ms_avg }} ms</span>
+        </div>
+        <div class="box">
+          <b>Latence p95</b>
+          <span>{{ last_run.latency_ms_p95 }} ms</span>
+        </div>
+        <div class="box">
+          <b>Disponibilité</b>
+          <span>{{ last_run.availability }}%</span>
+        </div>
+        <div class="box">
+          <b>API</b>
+          <span>{{ last_run.api }}</span>
+        </div>
+        <div class="box">
+          <b>État global</b>
+          <span class="{{ 'status-pass' if last_run.failed == 0 else 'status-fail' }}">
+            {{ 'HEALTHY' if last_run.failed == 0 else 'DEGRADED' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Détail des tests du dernier run</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>Statut</th>
+            <th>Latence</th>
+            <th>Détails</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for test in last_run.payload.tests %}
+          <tr>
+            <td>{{ test.name }}</td>
+            <td class="{{ 'status-pass' if test.status == 'PASS' else 'status-fail' }}">
+              {{ test.status }}
+            </td>
+            <td>
+              {% if test.latency_ms is not none %}
+                {{ test.latency_ms }} ms
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>{{ test.details }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      Aucun run n’a encore été enregistré. Lance d’abord <code>/run</code> pour initialiser le monitoring.
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <h3>Historique des runs</h3>
+      {% if runs %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>API</th>
+            <th>Passés</th>
+            <th>Échoués</th>
+            <th>Error rate</th>
+            <th>Latence avg</th>
+            <th>Latence p95</th>
+            <th>Disponibilité</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for run in runs %}
+          <tr>
+            <td>{{ run.id }}</td>
+            <td>{{ run.timestamp }}</td>
+            <td>{{ run.api }}</td>
+            <td>{{ run.passed }}</td>
+            <td>{{ run.failed }}</td>
+            <td>{{ run.error_rate }}</td>
+            <td>{{ run.latency_ms_avg }} ms</td>
+            <td>{{ run.latency_ms_p95 }} ms</td>
+            <td>{{ run.availability }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        Aucun historique disponible pour le moment.
+      </div>
+      {% endif %}
+    </div>
+  </section>
 </main>
 
 <div class="footer">
