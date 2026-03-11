@@ -1,13 +1,26 @@
 # API Choice
 
-- Étudiant :
-- API choisie :
-- URL base :
-- Documentation officielle / README :
-- Auth : None / API Key / OAuth
+- Étudiant : Anya Boubchir
+- API choisie : Agify
+- URL base : https://api.agify.io
+- Documentation officielle / README : https://agify.io/
+- Auth : None
 - Endpoints testés :
-  - GET ...
-  - GET ...
+  - GET /?name=michael
+  - GET /?name=anya
+  - GET /?name=
+  - GET /?name=123
 - Hypothèses de contrat (champs attendus, types, codes) :
+  - Le endpoint répond en HTTP 200
+  - Le Content-Type est JSON
+  - Les champs `name`, `age`, `count` existent
+  - `name` est une chaîne ou null
+  - `age` est un entier ou null
+  - `count` est un entier
 - Limites / rate limiting connu :
+  - charge limitée volontairement côté projet
+  - maximum 20 requêtes par run
 - Risques (instabilité, downtime, CORS, etc.) :
+  - indisponibilité temporaire
+  - latence variable
+  - valeurs parfois null selon le prénom
